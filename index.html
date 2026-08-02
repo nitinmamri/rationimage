@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ration Card Photo Crop Tool</title>
+  
+  <!-- Cropper.js CSS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" />
+  
+  <style>
+    :root{
+      --bg1:#0f172a;
+      --bg2:#312e81;
+      --card:rgba(255,255,255,.12);
+      --stroke:rgba(255,255,255,.18);
+      --text:#e5e7eb;
+      --muted:rgba(229,231,235,.78);
+      --accent1:#22d3ee;
+      --accent2:#8b5cf6;
+      --accent3:#fb7185;
+      --good:#22c55e;
+      --bad:#ef4444;
+    }
+
+    *{
+      margin:0;
+      padding:0;
+      box-sizing:border-box;
+    }
+
+    body{
+      min-height:100vh;
+      font-family:Inter, Arial, sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(34,211,238,.24), transparent 26%),
+        radial-gradient(circle at bottom right, rgba(139,92,246,.26), transparent 28%),
+        linear-gradient(135deg, var(--bg1), var(--bg2));
+      padding:24px;
+    }
+
+    .wrap{
+      max-width:900px;
+      margin:0 auto;
+    }
+
+    .hero{
+      text-align:center;
+      padding:18px 10px 26px;
+    }
+
+    .badge{
+      display:inline-block;
+      padding:8px 14px;
+      border-radius:999px;
+      background:rgba(255,255,255,.12);
+      border:1px solid rgba(255,255,255,.18);
+      font-size:13px;
+      color:#fff;
+      margin-bottom:14px;
+      backdrop-filter: blur(12px);
+    }
+
+    .hero h1{
+      font-size:32px;
+      line-height:1.15;
+      margin-bottom:10px;
+      letter-spacing:.2px;
+    }
+
+    .hero p{
+      color:var(--muted);
+      max-width:660px;
+      margin:0 auto;
+      line-height:1.75;
+      font-size:15px;
+    }
+
+    .layout{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:18px;
+      align-items:start;
+    }
+
+    .glass{
+      background:var(--card);
+      border:1px solid var(--stroke);
+      border-radius:24px;
+      box-shadow:0 18px 50px rgba(0,0,0,.22);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+    }
+
+    .panel{
+      padding:20px;
+    }
+
+    .panel h2{
+      font-size:20px;
+      margin-bottom:8px;
+    }
+
+    .panel .sub{
+      font-size:13px;
+      color:var(--muted);
+      margin-bottom:16px;
+      line-height:1.6;
+    }
+
+    .upload-card{
+      position:relative;
+      padding:18px;
+      border-radius:20px;
+      background:rgba(255,255,255,.09);
+      border:1px solid rgba(255,255,255,.14);
+      transition:.25s ease;
+      overflow:hidden;
+    }
+
+    .upload-card:hover{
+      transform:translateY(-2px);
+      border-color:rgba(255,255,255,.28);
+      box-shadow:0 12px 28px rgba(0,0,0,.18);
+    }
+
+    .upload-title{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      margin-bottom:14px;
+    }
+
+    .iconbox{
+      width:54px;
+      height:54px;
+      border-radius:16px;
+      display:grid;
+      place-items:center;
+      font-size:26px;
+      color:#fff;
+      box-shadow:0 10px 24px rgba(0,0,0,.18);
+    }
+
+    .icon-photo{ background:linear-gradient(135deg, #06b6d4, #2563eb); }
+
+    .upload-title h3{
+      font-size:18px;
+      margin-bottom:3px;
+    }
+
+    .upload-title span{
+      font-size:13px;
+      color:var(--muted);
+    }
+
+    .drop-btn{
+      display:block;
+      border:1.8px dashed rgba(255,255,255,.28);
+      background:linear-gradient(180deg, rgba(255,255,255,.14), rgba(255,255,255,.06));
+      border-radius:18px;
+      padding:16px;
+      text-align:center;
+      cursor:pointer;
+      transition:.22s ease;
+      margin-bottom:14px;
+    }
+
+    .drop-btn:hover{
+      border-color:#fff;
+      transform:translateY(-1px);
+    }
+
+    .drop-btn strong{
+      display:block;
+      font-size:15px;
+      margin-bottom:5px;
+      color:#fff;
+    }
+
+    .drop-btn small{
+      color:var(--muted);
+      line-height:1.5;
+    }
+
+    input[type="file"]{
+      display:none;
+    }
+
+    .fields{
+      display:grid;
+      gap:12px;
+    }
+
+    .field label{
+      display:block;
+      font-size:13px;
+      color:#fff;
+      margin-bottom:7px;
+      font-weight:700;
+    }
+
+    .field input,
+    .field select{
+      width:100%;
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.18);
+      background:rgba(255,255,255,.1);
+      color:#fff;
+      outline:none;
+      font-size:14px;
+    }
+
+    .field input::placeholder{ color:rgba(255,255,255,.45); }
+    .field input:focus,
+    .field select:focus{
+      border-color:#fff;
+      box-shadow:0 0 0 4px rgba(255,255,255,.08);
+    }
+
+    .controls{
+      display:grid;
+      gap:14px;
+      margin-top:16px;
+    }
+
+    .btn{
+      width:100%;
+      border:none;
+      border-radius:16px;
+      padding:15px 18px;
+      font-size:16px;
+      font-weight:800;
+      cursor:pointer;
+      color:#fff;
+      transition:.22s ease;
+      box-shadow:0 14px 28px rgba(0,0,0,.18);
+    }
+
+    .btn:hover{ transform:translateY(-2px); }
+
+    .btn:disabled{
+      background:#64748b !important;
+      cursor:not-allowed;
+      box-shadow:none;
+      transform:none;
+    }
+
+    .btn-photo{ background:linear-gradient(135deg, #06b6d4, #2563eb); }
+
+    .preview-box{
+      padding:20px;
+    }
+
+    .preview-head{
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      align-items:center;
+      margin-bottom:16px;
+    }
+
+    .preview-head h2{
+      font-size:20px;
+    }
+
+    .tip{
+      font-size:12px;
+      color:var(--muted);
+      text-align:right;
+      line-height:1.5;
+    }
+
+    .preview{
+      min-height:245px;
+      border-radius:20px;
+      padding:16px;
+      background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.14);
+    }
+
+    .preview h3{
+      font-size:17px;
+      margin-bottom:12px;
+    }
+
+    .preview-area{
+      display:none;
+      text-align:center;
+    }
+
+    .preview-area.show{ display:block; }
+
+    .preview-area img{
+      width:100%;
+      max-height:200px;
+      object-fit:contain;
+      border-radius:14px;
+      background:#fff;
+      padding:8px;
+    }
+
+    .info{
+      margin-top:12px;
+      background:rgba(255,255,255,.92);
+      color:#111827;
+      border-radius:14px;
+      padding:10px 12px;
+      font-size:14px;
+    }
+
+    .row{
+      display:flex;
+      justify-content:space-between;
+      padding:5px 0;
+      border-bottom:1px solid #e5e7eb;
+    }
+
+    .row:last-child{ border-bottom:none; }
+
+    .messages{
+      margin-top:16px;
+      display:grid;
+      gap:10px;
+    }
+
+    .msg{
+      display:none;
+      padding:14px 16px;
+      border-radius:16px;
+      white-space:pre-wrap;
+      line-height:1.6;
+      font-size:14px;
+    }
+
+    .msg.show{ display:block; }
+    .loading{
+      background:rgba(14,165,233,.15);
+      border:1px solid rgba(14,165,233,.35);
+      color:#dbeafe;
+    }
+    .success{
+      background:rgba(34,197,94,.16);
+      border:1px solid rgba(34,197,94,.36);
+      color:#dcfce7;
+    }
+    .error{
+      background:rgba(239,68,68,.16);
+      border:1px solid rgba(239,68,68,.36);
+      color:#fee2e2;
+    }
+
+    .note{
+      margin-top:16px;
+      color:rgba(255,255,255,.8);
+      font-size:13px;
+      line-height:1.7;
+      text-align:center;
+    }
+
+    /* Crop Modal */
+    .crop-modal{
+      display:none;
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.85);
+      z-index:9999;
+      align-items:center;
+      justify-content:center;
+      padding:20px;
+    }
+
+    .crop-modal.show{
+      display:flex;
+    }
+
+    .crop-container{
+      background:#1e293b;
+      border-radius:20px;
+      padding:20px;
+      max-width:90vw;
+      max-height:90vh;
+      display:flex;
+      flex-direction:column;
+      gap:16px;
+    }
+
+    .crop-image-wrapper{
+      max-width:80vw;
+      max-height:60vh;
+      background:#0f172a;
+      border-radius:12px;
+      overflow:hidden;
+    }
+
+    .crop-image-wrapper img{
+      max-width:100%;
+      display:block;
+    }
+
+    .crop-actions{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:12px;
+    }
+
+    .btn-crop{ background:linear-gradient(135deg, #22c55e, #16a34a); }
+    .btn-cancel{ background:rgba(148,163,184,.9); }
+
+    @media (max-width: 980px){
+      .layout{ grid-template-columns:1fr; }
+    }
+
+    @media (max-width: 640px){
+      body{ padding:14px; }
+      .hero h1{ font-size:26px; }
+      .controls{ grid-template-columns:1fr; }
+      .preview-head{ flex-direction:column; align-items:flex-start; }
+      .tip{ text-align:left; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="hero">
+      <div class="badge">UP RATION CARD PHOTO TOOL</div>
+      <h1>राशन कार्ड फोटो क्रॉप टूल</h1>
+      <p>
+        UP e-District के लिए फोटो: 132 × 170 px, default 300 DPI और 25 KB.<br>
+        जरूरत हो तो DPI और KB बदल भी सकते हैं।
+      </p>
+    </div>
+
+    <div class="layout">
+      <div class="glass panel">
+        <h2>Upload & Settings</h2>
+        <div class="sub">
+          Default Target: 132 × 170 px, 300 DPI, 25 KB (JPEG format)
+        </div>
+
+        <div class="upload-card">
+          <div class="upload-title">
+            <div class="iconbox icon-photo">🖼️</div>
+            <div>
+              <h3>Photo Upload</h3>
+              <span>Select → Crop → Download</span>
+            </div>
+          </div>
+
+          <label class="drop-btn" for="photoInput">
+            <strong>Click to choose photo</strong>
+            <small>JPEG / PNG supported (White background recommended)</small>
+          </label>
+          <input type="file" id="photoInput" accept="image/jpeg,.jpg,.jpeg,image/png,.png">
+
+          <div class="fields">
+            <div class="field">
+              <label>Photo DPI</label>
+              <select id="photoDpi">
+                <option value="300" selected>300 DPI (Recommended)</option>
+                <option value="200">200 DPI</option>
+                <option value="350">350 DPI</option>
+                <option value="400">400 DPI</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label>Target Size (KB)</label>
+              <select id="targetKb">
+                <option value="25" selected>25 KB (Recommended)</option>
+                <option value="20">20 KB</option>
+                <option value="30">30 KB</option>
+                <option value="40">40 KB</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label for="photoW">Photo Width (px)</label>
+              <input type="number" id="photoW" value="132" min="1" max="10000" readonly>
+            </div>
+            <div class="field">
+              <label for="photoH">Photo Height (px)</label>
+              <input type="number" id="photoH" value="170" min="1" max="10000" readonly>
+            </div>
+          </div>
+        </div>
+
+        <div class="controls">
+          <button class="btn btn-photo" id="photoBtn" onclick="downloadPhoto()" disabled>Download Photo</button>
+        </div>
+
+        <div class="messages">
+          <div id="loading" class="msg loading">⏳ Processing...</div>
+          <div id="successMessage" class="msg success"></div>
+          <div id="errorMessage" class="msg error"></div>
+        </div>
+      </div>
+
+      <div class="glass preview-box">
+        <div class="preview-head">
+          <h2>Live Preview</h2>
+          <div class="tip">
+            Browser preview only.<br>
+            यहाँ केवल अपलोड की गई इमेज का प्रीव्यू और साइज़ दिखेगा।
+          </div>
+        </div>
+
+        <div class="preview">
+          <h3>Photo Preview</h3>
+          <div id="photoPreview" class="preview-area">
+            <img id="photoImg" alt="Photo preview">
+            <div class="info" id="photoInfo"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="note">
+      Note: अगर कोई समस्या आ रही हो तो Nitin Verma से संपर्क करें।
+    </div>
+  </div>
+
+  <!-- CROP MODAL -->
+  <div id="cropModal" class="crop-modal">
+    <div class="crop-container">
+      <div class="crop-image-wrapper">
+        <img id="cropImage" src="" alt="Crop image">
+      </div>
+      <div class="crop-actions">
+        <button class="btn btn-crop" id="cropSaveBtn">Crop & Save</button>
+        <button class="btn btn-cancel" id="cropCancelBtn">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cropper.js JS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/piexifjs@1.0.0/piexif.js"></script>
+  <script>
+    let photoFile = null;
+    let croppedPhotoData = null;
+
+    let cropper = null;
+
+    const photoInput = document.getElementById('photoInput');
+
+    const photoImg = document.getElementById('photoImg');
+    const photoPreview = document.getElementById('photoPreview');
+    const photoInfo = document.getElementById('photoInfo');
+
+    const photoBtn = document.getElementById('photoBtn');
+
+    const cropModal = document.getElementById('cropModal');
+    const cropImage = document.getElementById('cropImage');
+    const cropSaveBtn = document.getElementById('cropSaveBtn');
+    const cropCancelBtn = document.getElementById('cropCancelBtn');
+
+    const photoW = document.getElementById('photoW');
+    const photoH = document.getElementById('photoH');
+    const photoDpi = document.getElementById('photoDpi');
+    const targetKb = document.getElementById('targetKb');
+
+    function validFile(file) {
+      return file && (file.type.includes('jpeg') || file.type.includes('png') || /\.(jpe?g|png)$/i.test(file.name));
+    }
+
+    function showMessage(type, text) {
+      const loading = document.getElementById('loading');
+      const successMessage = document.getElementById('successMessage');
+      const errorMessage = document.getElementById('errorMessage');
+
+      loading.classList.remove('show');
+      successMessage.classList.remove('show');
+      errorMessage.classList.remove('show');
+
+      if (type === 'loading') {
+        loading.textContent = text || '⏳ Processing...';
+        loading.classList.add('show');
+      } else if (type === 'success') {
+        successMessage.textContent = text;
+        successMessage.classList.add('show');
+      } else if (type === 'error') {
+        errorMessage.textContent = text;
+        errorMessage.classList.add('show');
+      }
+    }
+
+    function openCropModal(dataURL) {
+      cropImage.src = dataURL;
+      cropModal.classList.add('show');
+
+      if (cropper) {
+        cropper.destroy();
+      }
+
+      const aspectRatio = 132 / 170;
+
+      cropper = new Cropper(cropImage, {
+        aspectRatio: aspectRatio,
+        viewMode: 1,
+        autoCropArea: 0.9,
+        responsive: true,
+      });
+    }
+
+    function closeCropModal() {
+      cropModal.classList.remove('show');
+      if (cropper) {
+        cropper.destroy();
+        cropper = null;
+      }
+    }
+
+    cropSaveBtn.addEventListener('click', () => {
+      if (!cropper) return;
+
+      const canvas = cropper.getCroppedCanvas({
+        imageSmoothingEnabled: true,
+        imageSmoothingQuality: 'high',
+      });
+
+      const dataURL = canvas.toDataURL('image/jpeg', 0.95);
+
+      croppedPhotoData = dataURL;
+      photoImg.src = dataURL;
+      photoPreview.classList.add('show');
+      photoInfo.innerHTML = `
+        <div class="row"><span>Width</span><span>${canvas.width}px</span></div>
+        <div class="row"><span>Height</span><span>${canvas.height}px</span></div>
+        <div class="row"><span>Status</span><span>Cropped ✓</span></div>
+      `;
+      photoBtn.disabled = false;
+
+      closeCropModal();
+      showMessage('success', '✅ Photo cropped! Download ready.');
+    });
+
+    cropCancelBtn.addEventListener('click', closeCropModal);
+
+    // PHOTO FLOW
+    photoInput.addEventListener('change', e => {
+      const f = e.target.files[0];
+      if (f) {
+        if (!validFile(f)) {
+          alert('JPEG/PNG file चाहिए।');
+          return;
+        }
+        photoFile = f;
+        photoBtn.disabled = true;
+
+        const reader = new FileReader();
+        reader.onload = ev => {
+          openCropModal(ev.target.result);
+        };
+        reader.readAsDataURL(f);
+      }
+    });
+
+    // DOWNLOAD FUNCTIONS
+    function canvasToJpegBlob(canvas, quality = 0.92) {
+      return new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', quality));
+    }
+
+    async function setJpegDpi(blob, dpi) {
+      const ab = await blob.arrayBuffer();
+      let binary = '';
+      const bytes = new Uint8Array(ab);
+      for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
+
+      let exif = {};
+      try {
+        exif = piexif.load(binary);
+      } catch(e) {
+        exif = {"0th":{}};
+      }
+      if (!exif["0th"]) exif["0th"] = {};
+
+      exif['0th'][piexif.ImageIFD.XResolution] = [dpi, 1];
+      exif['0th'][piexif.ImageIFD.YResolution] = [dpi, 1];
+      exif['0th'][piexif.ImageIFD.ResolutionUnit] = 2;
+
+      const dumped = piexif.dump(exif);
+      const inserted = piexif.insert(dumped, binary);
+
+      const out = new Uint8Array(inserted.length);
+      for (let i = 0; i < inserted.length; i++) out[i] = inserted.charCodeAt(i);
+
+      return new Blob([out], { type: 'image/jpeg' });
+    }
+
+    function downloadBlob(blob, name) {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = name;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
+
+    async function processCroppedImage(dataURL, targetW, targetH, dpi, baseName, targetKB) {
+      const img = new Image();
+      img.src = dataURL;
+      await new Promise(r => img.onload = r);
+
+      const canvas = document.createElement('canvas');
+      canvas.width = targetW;
+      canvas.height = targetH;
+      const ctx = canvas.getContext('2d');
+
+      ctx.fillStyle = '#fff';
+      ctx.fillRect(0, 0, targetW, targetH);
+
+      const ratio = Math.min(targetW / img.width, targetH / img.height);
+      const newW = Math.round(img.width * ratio);
+      const newH = Math.round(img.height * ratio);
+      const x = Math.round((targetW - newW) / 2);
+      const y = Math.round((targetH - newH) / 2);
+
+      ctx.drawImage(img, x, y, newW, newH);
+
+      let quality = 0.75;
+      let blob = await canvasToJpegBlob(canvas, quality);
+      const maxKB = targetKB + 2;   // थोड़ा margin ऊपर
+      const minKB = targetKB - 5;   // थोड़ा नीचे भी acceptable
+
+      // अगर size बहुत बड़ा है तो quality कम करो
+      while (blob.size > maxKB * 1024 && quality > 0.25) {
+        quality -= 0.05;
+        blob = await canvasToJpegBlob(canvas, quality);
+      }
+
+      // अगर बहुत छोटा है तो थोड़ा quality बढ़ाओ
+      while (blob.size < minKB * 1024 && quality < 1) {
+        quality += 0.03;
+        if (quality > 1) quality = 1;
+        blob = await canvasToJpegBlob(canvas, quality);
+        if (quality >= 1) break;
+      }
+
+      blob = await setJpegDpi(blob, dpi);
+      downloadBlob(blob, `${baseName}-${dpi}dpi-${targetW}x${targetH}.jpg`);
+      return blob.size;
+    }
+
+    async function downloadPhoto() {
+      if (!croppedPhotoData) {
+        alert('पहले photo select करके crop करो।');
+        return;
+      }
+
+      photoBtn.disabled = true;
+      showMessage('loading', '⏳ Photo process हो रहा है...');
+
+      try {
+        const size = await processCroppedImage(
+          croppedPhotoData,
+          parseInt(photoW.value),
+          parseInt(photoH.value),
+          parseInt(photoDpi.value),
+          'ration-photo',
+          parseInt(targetKb.value)
+        );
+        showMessage('success', `✅ Photo downloaded successfully.\nOutput size: ${Math.round(size / 1024)} KB`);
+      } catch (e) {
+        showMessage('error', e.message || 'Photo process failed.');
+      } finally {
+        photoBtn.disabled = false;
+      }
+    }
+  </script>
+</body>
+</html>
