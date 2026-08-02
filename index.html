@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Ration Card Photo Crop Tool</title>
+  <title>132x170 Ration Card Photo Crop Tool</title>
   
   <!-- Cropper.js CSS -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" />
@@ -211,6 +211,14 @@
       color:#fff;
       outline:none;
       font-size:14px;
+      cursor: pointer;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23fff' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      padding-right: 36px;
     }
 
     .field input::placeholder{ color:rgba(255,255,255,.45); }
@@ -218,6 +226,11 @@
     .field select:focus{
       border-color:#fff;
       box-shadow:0 0 0 4px rgba(255,255,255,.08);
+    }
+
+    .field select option{
+      background: #1e293b;
+      color: #fff;
     }
 
     .controls{
@@ -426,7 +439,7 @@
   <div class="wrap">
     <div class="hero">
       <div class="badge">UP RATION CARD PHOTO TOOL</div>
-      <h1>राशन कार्ड फोटो क्रॉप टूल</h1>
+      <h1>132x170 px Image /राशन कार्ड फोटो क्रॉप टूल</h1>
       <p>
         UP e-District के लिए फोटो: 132 × 170 px, default 300 DPI और 25 KB.<br>
         जरूरत हो तो DPI और KB बदल भी सकते हैं।
@@ -722,16 +735,14 @@
 
       let quality = 0.75;
       let blob = await canvasToJpegBlob(canvas, quality);
-      const maxKB = targetKB + 2;   // थोड़ा margin ऊपर
-      const minKB = targetKB - 5;   // थोड़ा नीचे भी acceptable
+      const maxKB = targetKB + 2;
+      const minKB = targetKB - 5;
 
-      // अगर size बहुत बड़ा है तो quality कम करो
       while (blob.size > maxKB * 1024 && quality > 0.25) {
         quality -= 0.05;
         blob = await canvasToJpegBlob(canvas, quality);
       }
 
-      // अगर बहुत छोटा है तो थोड़ा quality बढ़ाओ
       while (blob.size < minKB * 1024 && quality < 1) {
         quality += 0.03;
         if (quality > 1) quality = 1;
